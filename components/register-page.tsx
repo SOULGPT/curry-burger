@@ -195,9 +195,12 @@ export function RegisterPage() {
                             type="tel"
                             required
                             value={formData.phone}
-                            onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                            onChange={(e) => {
+                                const val = e.target.value.replace(/\D/g, ''); // Digits only
+                                setFormData({ ...formData, phone: val });
+                            }}
                             className="w-full rounded-xl border border-zinc-800 bg-zinc-900 px-4 py-3 font-semibold text-white placeholder-zinc-600 focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500"
-                            placeholder="e.g. 333 638 6399"
+                            placeholder="e.g. 3336386399"
                         />
                     </div>
 
