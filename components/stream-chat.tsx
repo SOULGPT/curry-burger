@@ -152,12 +152,12 @@ export function StreamChat() {
         return (
             <>
                 {/* Floating Overlay Messages */}
-                <div className="fixed bottom-36 left-4 z-[50] w-64 flex flex-col items-start gap-2 pointer-events-none md:bottom-24">
+                <div className="fixed bottom-52 left-4 z-[50] w-72 flex flex-col items-start gap-3 pointer-events-none md:bottom-32 transition-all duration-300 ease-out">
                     {overlayMessages.map((msg) => (
-                        <div key={msg.id} className="bg-black/80 backdrop-blur-md px-3 py-1.5 rounded-lg border border-white/10 animate-in slide-in-from-left-4 fade-in duration-300">
-                            <div className="flex items-center space-x-2">
-                                <span className="text-[10px] font-bold opacity-80" style={{ color: stringToColor(msg.user) }}>{msg.user}</span>
-                                <span className="text-xs text-white shadow-sm">{formatMessage(msg.text)}</span>
+                        <div key={msg.id} className="bg-zinc-900/90 backdrop-blur-md px-4 py-2 rounded-2xl border border-white/10 shadow-lg animate-in slide-in-from-left-4 fade-in slide-in-from-bottom-2 duration-300">
+                            <div className="flex flex-col items-start space-y-0.5">
+                                <span className="text-[10px] font-black uppercase tracking-wider opacity-75" style={{ color: stringToColor(msg.user) }}>{msg.user}</span>
+                                <span className="text-sm font-medium text-white shadow-sm break-words leading-tight">{formatMessage(msg.text)}</span>
                             </div>
                         </div>
                     ))}
