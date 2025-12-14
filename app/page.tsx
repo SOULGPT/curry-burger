@@ -4,7 +4,7 @@ import { StreamChat } from "@/components/stream-chat";
 export default function Home() {
   return (
     <div className="flex min-h-screen">
-      <div className="hidden md:block">
+      <div>
         <StreamChat />
       </div>
       <div className="flex-1 space-y-8 p-4 md:pl-80">
