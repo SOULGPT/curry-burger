@@ -87,6 +87,47 @@ export function AdminPanel() {
         }
     };
 
+    const handleDemoteToWaitlist = (player: any) => {
+        if (!confirm(`Move ${player.name} to Waitlist? This will remove them from any active match.`)) return;
+
+        // 1. Update Registration
+        storage.saveRegistration({ ...player, isWaitlist: true });
+
+        // 2. Remove from Bracket if exists
+        if (bracket.length > 0) {
+            const newBracket = bracket.map(m => ({
+                ...m,
+                player1Id: m.player1Id === player.id ? null : m.player1Id,
+                player2Id: m.player2Id === player.id ? null : m.player2Id,
+                winnerId: m.winnerId === player.id ? null : m.winnerId
+            }));
+            storage.saveBracket(newBracket);
+        }
+    };
+
+    const handlePromoteToActive = (player: any) => {
+        // 1. Update Registration
+        storage.saveRegistration({ ...player, isWaitlist: false });
+
+        // 2. Add to Bracket if exists and spot is available in Round 1
+        if (bracket.length > 0) {
+            const emptyMatchIndex = bracket.findIndex(m => m.round === 1 && (m.player1Id === null || m.player2Id === null));
+
+            if (emptyMatchIndex !== -1) {
+                const newBracket = [...bracket];
+                const match = newBracket[emptyMatchIndex];
+
+                // Fill the first empty slot
+                if (match.player1Id === null) match.player1Id = player.id;
+                else if (match.player2Id === null) match.player2Id = player.id;
+
+                storage.saveBracket(newBracket);
+            } else {
+                alert("Player moved to Active list, but Bracket is FULL. No empty spot in Round 1 found.");
+            }
+        }
+    };
+
     if (!isAuthenticated) {
         return (
             <div className="flex h-[70vh] flex-col items-center justify-center">
@@ -329,9 +370,7 @@ export function AdminPanel() {
                                         </div>
                                     </div>
                                     <button
-                                        onClick={() => {
-                                            storage.saveRegistration({ ...player, isWaitlist: true });
-                                        }}
+                                        onClick={() => handleDemoteToWaitlist(player)}
                                         className="rounded-lg bg-zinc-800 p-2 text-zinc-400 hover:bg-amber-500/20 hover:text-amber-500"
                                         title="Move to Waitlist"
                                     >
@@ -380,9 +419,7 @@ export function AdminPanel() {
                                             </div>
                                         </div>
                                         <button
-                                            onClick={() => {
-                                                storage.saveRegistration({ ...player, isWaitlist: false });
-                                            }}
+                                            onClick={() => handlePromoteToActive(player)}
                                             className="rounded-lg bg-zinc-800 p-2 text-zinc-400 hover:bg-green-500/20 hover:text-green-500"
                                             title="Move to Spot"
                                         >
