@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { collection, addDoc, query, orderBy, onSnapshot, serverTimestamp, getDocs, writeBatch, limit } from 'firebase/firestore';
+import { collection, addDoc, query, orderBy, onSnapshot, serverTimestamp, getDocs, writeBatch, limit, where } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useTournament } from './useTournament';
 
@@ -25,8 +25,18 @@ export function useChat() {
     useEffect(() => {
         if (!db) return;
 
+        // "Twitch Style" Ephemeral Chat: Only show last 6 hours
+        // This effectively "deletes" old messages from the user's view immediately
+        const sixHoursAgo = new Date(Date.now() - 6 * 60 * 60 * 1000);
+
         // Subscribe to messages
-        const q = query(collection(db, "messages"), orderBy("timestamp", "asc"), limit(100));
+        const q = query(
+            collection(db, "messages"),
+            where("timestamp", ">", sixHoursAgo),
+            orderBy("timestamp", "asc"),
+            limit(300) // Keep plenty of history for active streams
+        );
+
         const unsubscribe = onSnapshot(q, (snapshot) => {
             const msgs = snapshot.docs.map(doc => ({
                 id: doc.id,
@@ -45,6 +55,8 @@ export function useChat() {
             user: username,
             text: text.trim(),
             timestamp: serverTimestamp(),
+            // TTL Field: 6 hours from now
+            expiresAt: new Date(Date.now() + 6 * 60 * 60 * 1000)
         });
     };
 
