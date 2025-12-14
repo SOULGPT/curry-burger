@@ -1,0 +1,196 @@
+"use client";
+
+import { useEffect, useRef, useState } from "react";
+import { Send, Smile, User } from "lucide-react";
+import { useChat } from "@/hooks/useChat";
+import { useTournament } from "@/hooks/useTournament";
+
+const CUSTOM_EMOJIS = [
+    { code: ":burger:", char: "🍔", label: "Burger" },
+    { code: ":curry:", char: "🍛", label: "Curry" },
+    { code: ":fries:", char: "🍟", label: "Fries" },
+    { code: ":drink:", char: "🥤", label: "Drink" },
+    { code: ":soccer:", char: "⚽", label: "Goal" },
+    { code: ":fire:", char: "🔥", label: "Fire" },
+    { code: ":trophy:", char: "🏆", label: "Win" },
+    { code: ":goat:", char: "🐐", label: "GOAT" },
+];
+
+export function StreamChat() {
+    const { messages, sendMessage, username, setChatName } = useChat();
+    const { settings } = useTournament();
+    const [input, setInput] = useState("");
+    const [showEmojis, setShowEmojis] = useState(false);
+    const scrollRef = useRef<HTMLDivElement>(null);
+    const [nameInput, setNameInput] = useState("");
+
+    // Scroll to bottom on new message
+    useEffect(() => {
+        if (scrollRef.current) {
+            scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+        }
+    }, [messages]);
+
+    const handleSend = (e: React.FormEvent) => {
+        e.preventDefault();
+        if (input.trim()) {
+            sendMessage(input);
+            setInput("");
+            setShowEmojis(false);
+        }
+    };
+
+    const insertEmoji = (emoji: string) => {
+        setInput((prev) => prev + " " + emoji + " ");
+    };
+
+    if (settings.status === 'finished') {
+        return (
+            <div className="fixed left-0 top-0 bottom-0 z-30 w-80 flex flex-col items-center justify-center border-r border-white/10 bg-black/60 p-6 backdrop-blur-xl text-center">
+                <div className="rounded-full bg-zinc-800 p-4 mb-4">
+                    <User className="h-8 w-8 text-zinc-500" />
+                </div>
+                <h3 className="text-xl font-bold text-white">Chat Closed</h3>
+                <p className="text-zinc-400 mt-2">Tournament finished.</p>
+            </div>
+        )
+    }
+
+    if (!username) {
+        return (
+            <div className="fixed left-0 top-0 bottom-0 z-30 w-80 flex flex-col items-center justify-center border-r border-white/10 bg-black/60 p-6 backdrop-blur-xl animate-in slide-in-from-left duration-500 hover:bg-black/70 transition-colors">
+                <div className="w-full max-w-xs space-y-4 text-center">
+                    <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-amber-500/20 shadow-[0_0_30px_rgba(245,158,11,0.2)]">
+                        <User className="h-8 w-8 text-amber-500" />
+                    </div>
+                    <h3 className="text-xl font-black uppercase italic text-white">Join the Chat</h3>
+                    <p className="text-xs text-zinc-400">Pick a username to start chatting!</p>
+                    <form onSubmit={(e) => {
+                        e.preventDefault();
+                        if (nameInput.trim()) setChatName(nameInput);
+                    }} className="space-y-2">
+                        <input
+                            type="text"
+                            value={nameInput}
+                            onChange={(e) => setNameInput(e.target.value)}
+                            placeholder="Username..."
+                            className="w-full rounded-xl border border-zinc-700 bg-black/50 px-4 py-2 font-bold text-white placeholder-zinc-500 focus:border-amber-500 focus:outline-none"
+                            maxLength={15}
+                        />
+                        <button
+                            type="submit"
+                            disabled={!nameInput.trim()}
+                            className="w-full rounded-xl bg-amber-500 py-2 font-bold text-black transition hover:bg-amber-400 disabled:opacity-50"
+                        >
+                            Join
+                        </button>
+                    </form>
+                </div>
+            </div>
+        );
+    }
+
+    return (
+        <div className="fixed left-0 top-0 bottom-0 z-30 flex w-80 flex-col border-r border-white/10 bg-black/40 backdrop-blur-md animate-in slide-in-from-left duration-700">
+            {/* Header */}
+            <div className="flex h-16 items-center justify-between border-b border-white/5 px-4 bg-black/20">
+                <h3 className="font-black uppercase italic tracking-wider text-white">
+                    <span className="text-amber-500">Live</span> Chat
+                </h3>
+                <div className="flex items-center space-x-2">
+                    <div className="h-2 w-2 animate-pulse rounded-full bg-red-500" />
+                    <span className="text-xs font-bold text-red-500">LIVE</span>
+                </div>
+            </div>
+
+            {/* Messages */}
+            <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-4 scrollbar-thin scrollbar-thumb-zinc-700 scrollbar-track-transparent">
+                {messages.length === 0 && (
+                    <div className="py-10 text-center text-xs text-zinc-500 italic">
+                        No messages yet. Say hi! 👋
+                    </div>
+                )}
+                {messages.map((msg) => (
+                    <div key={msg.id} className="animate-in slide-in-from-left-2 fade-in duration-300">
+                        <div className="flex items-baseline space-x-2">
+                            <span className="text-xs font-bold text-zinc-500" style={{ color: stringToColor(msg.user) }}>
+                                {msg.user}
+                            </span>
+                            <span className="text-[10px] text-zinc-600">
+                                {msg.timestamp?.toDate ? msg.timestamp.toDate().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}
+                            </span>
+                        </div>
+                        <p className="mt-0.5 break-words text-sm font-medium text-white/90 leading-relaxed shadow-sm">
+                            {formatMessage(msg.text)}
+                        </p>
+                    </div>
+                ))}
+            </div>
+
+            {/* Input */}
+            <div className="border-t border-white/5 bg-black/40 p-4">
+                <form onSubmit={handleSend} className="relative">
+                    <div className="relative flex items-center rounded-xl bg-zinc-900 ring-1 ring-zinc-800 focus-within:ring-amber-500 overflow-hidden">
+                        <button
+                            type="button"
+                            onClick={() => setShowEmojis(!showEmojis)}
+                            className="p-2 text-zinc-500 hover:text-amber-500 transition"
+                        >
+                            <Smile className="h-5 w-5" />
+                        </button>
+                        <input
+                            type="text"
+                            value={input}
+                            onChange={(e) => setInput(e.target.value)}
+                            placeholder="Send a message..."
+                            className="flex-1 bg-transparent py-2 text-sm text-white placeholder-zinc-500 focus:outline-none"
+                            maxLength={200}
+                        />
+                        <button
+                            type="submit"
+                            disabled={!input.trim()}
+                            className="p-2 text-amber-500 hover:text-amber-400 disabled:opacity-50"
+                        >
+                            <Send className="h-4 w-4" />
+                        </button>
+                    </div>
+
+                    {/* Emoji Picker */}
+                    {showEmojis && (
+                        <div className="absolute bottom-full left-0 mb-2 w-full rounded-xl border border-zinc-800 bg-zinc-900 p-2 shadow-2xl animate-in zoom-in-95 duration-200">
+                            <div className="grid grid-cols-4 gap-2">
+                                {CUSTOM_EMOJIS.map((emoji) => (
+                                    <button
+                                        key={emoji.code}
+                                        type="button"
+                                        onClick={() => insertEmoji(emoji.char)}
+                                        className="rounded hover:bg-zinc-800 py-1 text-xl transition transform hover:scale-110"
+                                        title={emoji.label}
+                                    >
+                                        {emoji.char}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+                </form>
+            </div>
+        </div>
+    );
+}
+
+// Helpers
+const stringToColor = (str: string) => {
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {
+        hash = str.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    const c = (hash & 0x00ffffff).toString(16).toUpperCase();
+    return '#' + '00000'.substring(0, 6 - c.length) + c;
+}
+
+const formatMessage = (text: string) => {
+    // Simple text renderer, emojis are already chars
+    // We could add sophisticated parsing here if we used :codes: instead of chars directly
+    return text;
+}
