@@ -23,8 +23,8 @@ export function RegisterPage() {
     const maxPlayers = settings.maxPlayers;
     const activePlayersCount = registrations.filter(p => !p.isWaitlist).length;
     const isFull = activePlayersCount >= maxPlayers;
-    // Waitlist active if full OR status is not 'open'
-    const isWaitlistMode = isFull || (settings.status && settings.status !== 'open');
+    // Waitlist active ONLY if full. Status 'active' should not block new registrations if spots are open.
+    const isWaitlistMode = isFull;
 
     const handlePhotoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
