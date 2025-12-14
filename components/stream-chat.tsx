@@ -87,7 +87,7 @@ export function StreamChat() {
     if (settings.status === 'finished') {
         // ... (existing finished state)
         return (
-            <div className={`fixed left-0 top-0 bottom-0 z-30 flex flex-col items-center justify-center border-r border-white/10 bg-black/60 backdrop-blur-xl text-center transition-all duration-500 ${isCollapsed ? "w-16" : "w-full sm:w-80 p-6"}`}>
+            <div className={`fixed left-0 top-0 bottom-0 z-30 flex flex-col items-center justify-center border-r border-white/10 bg-black/60 backdrop-blur-xl text-center transition-all duration-500 ${isCollapsed ? "w-16" : "w-full md:w-80 p-6"}`}>
                 <button
                     onClick={() => setIsCollapsed(!isCollapsed)}
                     className="absolute top-4 right-4 text-zinc-500 hover:text-white"
@@ -154,7 +154,7 @@ export function StreamChat() {
 
     if (!username) {
         return (
-            <div className="fixed left-0 top-0 bottom-0 z-30 w-full sm:w-80 flex flex-col items-center justify-center border-r border-white/10 bg-black/60 p-6 backdrop-blur-xl animate-in slide-in-from-left duration-500 hover:bg-black/70 transition-colors">
+            <div className="fixed left-0 top-0 bottom-0 z-30 w-full md:w-80 flex flex-col items-center justify-center border-r border-white/10 bg-black/60 p-6 backdrop-blur-xl animate-in slide-in-from-left duration-500 hover:bg-black/70 transition-colors">
                 <div className="w-full max-w-xs space-y-4 text-center relative">
                     <button
                         onClick={() => setIsCollapsed(true)}
@@ -229,7 +229,7 @@ export function StreamChat() {
     }
 
     return (
-        <div className="fixed left-0 top-0 bottom-0 z-30 flex w-full sm:w-80 flex-col border-r border-white/10 bg-black/40 backdrop-blur-md animate-in slide-in-from-left duration-700">
+        <div className="fixed left-0 top-0 bottom-0 z-30 flex w-full md:w-80 flex-col border-r border-white/10 bg-black/40 backdrop-blur-md animate-in slide-in-from-left duration-700">
             {/* Header */}
             <div className="flex h-16 items-center justify-between border-b border-white/5 px-4 bg-black/20">
                 <div className="flex items-center space-x-2">
