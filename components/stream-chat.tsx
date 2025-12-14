@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Send, Smile, User } from "lucide-react";
+import { Send, Smile, User, ChevronLeft, MessageSquare } from "lucide-react";
 import { useChat } from "@/hooks/useChat";
 import { useTournament } from "@/hooks/useTournament";
 
@@ -19,25 +19,57 @@ const CUSTOM_EMOJIS = [
 export function StreamChat() {
     const { messages, sendMessage, username, setChatName } = useChat();
     const { settings } = useTournament();
+
+    // UI State
+    const [isCollapsed, setIsCollapsed] = useState(false);
     const [input, setInput] = useState("");
     const [showEmojis, setShowEmojis] = useState(false);
-    const scrollRef = useRef<HTMLDivElement>(null);
     const [nameInput, setNameInput] = useState("");
+    const scrollRef = useRef<HTMLDivElement>(null);
+
+    // Anti-spam State
+    const lastMessageRef = useRef<string>("");
+    const lastTimeRef = useRef<number>(0);
+    const [cooldown, setCooldown] = useState(0);
 
     // Scroll to bottom on new message
     useEffect(() => {
         if (scrollRef.current) {
             scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
         }
-    }, [messages]);
+    }, [messages, isCollapsed]);
+
+    // Cooldown timer
+    useEffect(() => {
+        if (cooldown > 0) {
+            const timer = setTimeout(() => setCooldown(cooldown - 1), 1000);
+            return () => clearTimeout(timer);
+        }
+    }, [cooldown]);
 
     const handleSend = (e: React.FormEvent) => {
         e.preventDefault();
-        if (input.trim()) {
-            sendMessage(input);
-            setInput("");
-            setShowEmojis(false);
+        const trimmed = input.trim();
+        if (!trimmed) return;
+
+        // Anti-spam: Duplicate check
+        if (trimmed === lastMessageRef.current) {
+            alert("Please don't repeat the same message.");
+            return;
         }
+
+        // Anti-spam: Cooldown (3 seconds)
+        const now = Date.now();
+        if (now - lastTimeRef.current < 3000) {
+            return; // Should be handled by UI state, but double check
+        }
+
+        sendMessage(trimmed);
+        setInput("");
+        setShowEmojis(false);
+        lastMessageRef.current = trimmed;
+        lastTimeRef.current = now;
+        setCooldown(3);
     };
 
     const insertEmoji = (emoji: string) => {
@@ -45,15 +77,43 @@ export function StreamChat() {
     };
 
     if (settings.status === 'finished') {
+        // ... (existing finished state)
         return (
-            <div className="fixed left-0 top-0 bottom-0 z-30 w-80 flex flex-col items-center justify-center border-r border-white/10 bg-black/60 p-6 backdrop-blur-xl text-center">
-                <div className="rounded-full bg-zinc-800 p-4 mb-4">
-                    <User className="h-8 w-8 text-zinc-500" />
-                </div>
-                <h3 className="text-xl font-bold text-white">Chat Closed</h3>
-                <p className="text-zinc-400 mt-2">Tournament finished.</p>
+            <div className={`fixed left-0 top-0 bottom-0 z-30 flex flex-col items-center justify-center border-r border-white/10 bg-black/60 backdrop-blur-xl text-center transition-all duration-500 ${isCollapsed ? "w-16" : "w-80 p-6"}`}>
+                <button
+                    onClick={() => setIsCollapsed(!isCollapsed)}
+                    className="absolute top-4 right-4 text-zinc-500 hover:text-white"
+                >
+                    {isCollapsed ? <MessageSquare className="h-6 w-6" /> : <ChevronLeft className="h-6 w-6" />}
+                </button>
+
+                {!isCollapsed && (
+                    <>
+                        <div className="rounded-full bg-zinc-800 p-4 mb-4">
+                            <User className="h-8 w-8 text-zinc-500" />
+                        </div>
+                        <h3 className="text-xl font-bold text-white">Chat Closed</h3>
+                        <p className="text-zinc-400 mt-2">Tournament finished.</p>
+                    </>
+                )}
             </div>
         )
+    }
+
+    // Minimized State (Bubble)
+    if (isCollapsed) {
+        return (
+            <button
+                onClick={() => setIsCollapsed(false)}
+                className="fixed left-4 bottom-4 z-30 flex h-14 w-14 items-center justify-center rounded-full bg-amber-500 shadow-[0_0_20px_rgba(245,158,11,0.4)] transition hover:scale-110 hover:bg-amber-400 animate-in zoom-in"
+                title="Open Chat"
+            >
+                <div className="relative">
+                    <MessageSquare className="h-6 w-6 text-black" />
+                    <div className="absolute -top-1 -right-1 h-3 w-3 rounded-full bg-red-500 border-2 border-black animate-pulse" />
+                </div>
+            </button>
+        );
     }
 
     if (!username) {
@@ -94,13 +154,19 @@ export function StreamChat() {
         <div className="fixed left-0 top-0 bottom-0 z-30 flex w-80 flex-col border-r border-white/10 bg-black/40 backdrop-blur-md animate-in slide-in-from-left duration-700">
             {/* Header */}
             <div className="flex h-16 items-center justify-between border-b border-white/5 px-4 bg-black/20">
-                <h3 className="font-black uppercase italic tracking-wider text-white">
-                    <span className="text-amber-500">Live</span> Chat
-                </h3>
                 <div className="flex items-center space-x-2">
+                    <h3 className="font-black uppercase italic tracking-wider text-white">
+                        <span className="text-amber-500">Live</span> Chat
+                    </h3>
                     <div className="h-2 w-2 animate-pulse rounded-full bg-red-500" />
-                    <span className="text-xs font-bold text-red-500">LIVE</span>
                 </div>
+                <button
+                    onClick={() => setIsCollapsed(true)}
+                    className="rounded-lg p-1 text-zinc-400 hover:bg-white/10 hover:text-white transition"
+                    title="Minimize Chat"
+                >
+                    <ChevronLeft className="h-5 w-5" />
+                </button>
             </div>
 
             {/* Messages */}
@@ -142,16 +208,21 @@ export function StreamChat() {
                             type="text"
                             value={input}
                             onChange={(e) => setInput(e.target.value)}
-                            placeholder="Send a message..."
-                            className="flex-1 bg-transparent py-2 text-sm text-white placeholder-zinc-500 focus:outline-none"
+                            placeholder={cooldown > 0 ? `Wait ${cooldown}s...` : "Send a message..."}
+                            disabled={cooldown > 0}
+                            className="flex-1 bg-transparent py-2 text-sm text-white placeholder-zinc-500 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
                             maxLength={200}
                         />
                         <button
                             type="submit"
-                            disabled={!input.trim()}
-                            className="p-2 text-amber-500 hover:text-amber-400 disabled:opacity-50"
+                            disabled={!input.trim() || cooldown > 0}
+                            className="p-2 text-amber-500 hover:text-amber-400 disabled:opacity-50 transition"
                         >
-                            <Send className="h-4 w-4" />
+                            {cooldown > 0 ? (
+                                <span className="text-xs font-bold w-4 h-4 flex items-center justify-center">{cooldown}</span>
+                            ) : (
+                                <Send className="h-4 w-4" />
+                            )}
                         </button>
                     </div>
 
