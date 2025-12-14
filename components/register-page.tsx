@@ -21,9 +21,9 @@ export function RegisterPage() {
     if (!isLoaded) return <div className="p-8 text-center text-zinc-500">Loading registrations...</div>;
 
     const maxPlayers = settings.maxPlayers;
-    const isFull = registrations.length >= maxPlayers;
-    // Waitlist active if full OR status is not 'open' (e.g. running or finished)
-    // Note: We need to check if settings.status exists, defaulting to 'open' if checking against old storage
+    const activePlayersCount = registrations.filter(p => !p.isWaitlist).length;
+    const isFull = activePlayersCount >= maxPlayers;
+    // Waitlist active if full OR status is not 'open'
     const isWaitlistMode = isFull || (settings.status && settings.status !== 'open');
 
     const handlePhotoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -104,7 +104,7 @@ export function RegisterPage() {
                 <p className="max-w-xs text-zinc-400 font-medium">
                     {isWaitlistMode
                         ? `We'll notify ${formData.name} when a spot opens up. Stay hungry! 🍟`
-                        : `Thanks for participating in Curry & BurgerNow FC 26! See you on Monday! 🍔⚽`}
+                        : `Thanks for participating in Curry & Burger FC 26! See you on Monday! 🍔⚽`}
                 </p>
                 <button
                     onClick={resetForm}

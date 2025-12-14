@@ -59,7 +59,13 @@ export function useTournament() {
         saveSettings: (newSettings: TournamentSettings) => pushUpdate({ settings: newSettings }),
 
         saveRegistration: (player: RegisteredPlayer) => {
-            const updated = [...registrations, player];
+            const exists = registrations.some(p => p.id === player.id);
+            let updated;
+            if (exists) {
+                updated = registrations.map(p => p.id === player.id ? player : p);
+            } else {
+                updated = [...registrations, player];
+            }
             pushUpdate({ registrations: updated });
         },
 

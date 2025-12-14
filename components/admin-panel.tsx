@@ -330,9 +330,19 @@ export function AdminPanel() {
                                     </div>
                                     <button
                                         onClick={() => {
+                                            storage.saveRegistration({ ...player, isWaitlist: true });
+                                        }}
+                                        className="rounded-lg bg-zinc-800 p-2 text-zinc-400 hover:bg-amber-500/20 hover:text-amber-500"
+                                        title="Move to Waitlist"
+                                    >
+                                        <Clock className="h-5 w-5" />
+                                    </button>
+                                    <button
+                                        onClick={() => {
                                             if (confirm("Kick player?")) storage.removeRegistration(player.id);
                                         }}
                                         className="rounded-lg bg-zinc-800 p-2 text-zinc-400 hover:bg-red-500/20 hover:text-red-500"
+                                        title="Kick"
                                     >
                                         <Trash2 className="h-5 w-5" />
                                     </button>
@@ -371,9 +381,19 @@ export function AdminPanel() {
                                         </div>
                                         <button
                                             onClick={() => {
+                                                storage.saveRegistration({ ...player, isWaitlist: false });
+                                            }}
+                                            className="rounded-lg bg-zinc-800 p-2 text-zinc-400 hover:bg-green-500/20 hover:text-green-500"
+                                            title="Move to Spot"
+                                        >
+                                            <Trophy className="h-5 w-5" />
+                                        </button>
+                                        <button
+                                            onClick={() => {
                                                 if (confirm("Remove user from waitlist?")) storage.removeRegistration(player.id);
                                             }}
                                             className="rounded-lg bg-zinc-800 p-2 text-zinc-400 hover:bg-red-500/20 hover:text-red-500"
+                                            title="Remove"
                                         >
                                             <Trash2 className="h-5 w-5" />
                                         </button>
