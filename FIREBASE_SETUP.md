@@ -21,13 +21,24 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     
-    // Allow anyone to read and write chat messages
-    // (Since we don't have user login for chat, this is required for it to work)
+    // Allow anyone to read messages
     match /messages/{messageId} {
-      allow read, write: if true;
+      allow read: if true;
+      
+      // Strict validation for creating messages
+      allow create: if request.resource.data.text is string
+                    && request.resource.data.text.size() > 0
+                    && request.resource.data.text.size() <= 300  // Max 300 chars prevents payload spam
+                    && request.resource.data.user is string
+                    && request.resource.data.user.size() <= 20   // Max 20 chars username
+                    && request.resource.data.timestamp is timestamp
+                    && request.resource.data.timestamp == request.time; // Prevent fake timestamps
+
+      // No one can edit or delete messages once sent (tamper-proof)
+      allow update, delete: if false; 
     }
     
-    // Default deny for everything else for safety
+    // Default deny for everything else (Best Practice)
     match /{document=**} {
       allow read, write: if false;
     }
