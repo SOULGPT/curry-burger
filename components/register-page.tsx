@@ -52,14 +52,18 @@ export function RegisterPage() {
         }
 
         // Check for duplicates
-        const isDuplicate = registrations.some(p =>
+        const existingReg = registrations.find(p =>
             p.name.toLowerCase() === formData.name.toLowerCase() ||
             p.email?.toLowerCase() === formData.email.toLowerCase() ||
             p.phone === formData.phone
         );
 
-        if (isDuplicate) {
-            setError("You are already registered! Use different details if you are registering for someone else.");
+        if (existingReg) {
+            if (existingReg.isWaitlist) {
+                setError("You are already on the WAITLIST! 🍟 We'll notify you if a spot opens.");
+            } else {
+                setError("You have already secured a SPOT! 🍔 See you on Monday!");
+            }
             return;
         }
 
@@ -96,11 +100,11 @@ export function RegisterPage() {
                 <div className="flex h-24 w-24 items-center justify-center rounded-full bg-green-500/20 text-green-500">
                     <CheckCircle className="h-12 w-12" />
                 </div>
-                <h2 className="text-3xl font-bold text-white">{isWaitlistMode ? "Added to Waitlist!" : "You're In!"}</h2>
-                <p className="max-w-xs text-zinc-400">
+                <h2 className="text-3xl font-bold text-white uppercase italic tracking-wide">{isWaitlistMode ? "Added to Waitlist!" : "Registration Confirmed!"}</h2>
+                <p className="max-w-xs text-zinc-400 font-medium">
                     {isWaitlistMode
-                        ? `We'll notify ${formData.name} when a spot opens up or for the next tournament.`
-                        : `Registration confirmed for ${formData.name}. Get ready to play!`}
+                        ? `We'll notify ${formData.name} when a spot opens up. Stay hungry! 🍟`
+                        : `Thanks for participating in Curry & BurgerNow FC 26! See you on Monday! 🍔⚽`}
                 </p>
                 <button
                     onClick={resetForm}
