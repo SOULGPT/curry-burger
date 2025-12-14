@@ -118,7 +118,7 @@ export function StreamChat() {
         return (
             <button
                 onClick={() => setIsCollapsed(false)}
-                className="fixed left-4 bottom-4 z-30 flex h-14 w-14 items-center justify-center rounded-full bg-amber-500 shadow-[0_0_20px_rgba(245,158,11,0.4)] transition hover:scale-110 hover:bg-amber-400 animate-in zoom-in"
+                className="fixed left-4 bottom-28 md:bottom-8 z-[60] flex h-14 w-14 items-center justify-center rounded-full bg-amber-500 shadow-[0_0_25px_rgba(245,158,11,0.6)] ring-2 ring-white/20 transition hover:scale-110 hover:bg-amber-400 animate-in zoom-in duration-300"
                 title="Open Chat"
             >
                 <div className="relative">
