@@ -279,7 +279,7 @@ export function StreamChat() {
     }
 
     return (
-        <div className="fixed left-0 top-0 bottom-0 z-30 flex w-full md:w-80 flex-col border-r border-white/10 bg-black/40 backdrop-blur-md animate-in slide-in-from-left duration-700">
+        <div className="fixed left-0 top-0 bottom-0 z-[60] flex w-full md:w-80 flex-col border-r border-white/10 bg-black/40 backdrop-blur-md animate-in slide-in-from-left duration-700">
             {/* Header */}
             <div className="flex h-16 items-center justify-between border-b border-white/5 px-4 bg-black/20">
                 <div className="flex items-center space-x-2">
@@ -322,7 +322,7 @@ export function StreamChat() {
             </div>
 
             {/* Input */}
-            <div className="border-t border-white/5 bg-black/40 p-4">
+            <div className="border-t border-white/5 bg-black/40 p-4 pb-[calc(1rem+env(safe-area-inset-bottom))] md:pb-4">
                 <form onSubmit={handleSend} className="relative">
                     <div className="relative flex items-center rounded-xl bg-zinc-900 ring-1 ring-zinc-800 focus-within:ring-amber-500 overflow-hidden">
                         <button
