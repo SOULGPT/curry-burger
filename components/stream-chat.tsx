@@ -19,7 +19,7 @@ const CUSTOM_EMOJIS = [
 
 export function StreamChat() {
     const { messages, sendMessage, username, setChatName } = useChat();
-    const { settings } = useTournament();
+    const { settings, registrations } = useTournament(); // Move hook call up
 
     // UI State
     const [isCollapsed, setIsCollapsed] = useState(false);
@@ -27,6 +27,11 @@ export function StreamChat() {
     const [showEmojis, setShowEmojis] = useState(false);
     const [nameInput, setNameInput] = useState("");
     const scrollRef = useRef<HTMLDivElement>(null);
+
+    // Auth State (Moved up)
+    const [authStep, setAuthStep] = useState<'email' | 'username'>('email');
+    const [emailInput, setEmailInput] = useState("");
+    const [authError, setAuthError] = useState("");
 
     // Anti-spam State
     const lastMessageRef = useRef<string>("");
@@ -124,12 +129,7 @@ export function StreamChat() {
         );
     }
 
-    const { registrations } = useTournament();
-
-    // Auth State
-    const [authStep, setAuthStep] = useState<'email' | 'username'>('email');
-    const [emailInput, setEmailInput] = useState("");
-    const [authError, setAuthError] = useState("");
+    // Auth State handled at top level now
 
     const handleEmailSubmit = (e: React.FormEvent) => {
         e.preventDefault();
