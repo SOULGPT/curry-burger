@@ -155,7 +155,14 @@ export function StreamChat() {
     if (!username) {
         return (
             <div className="fixed left-0 top-0 bottom-0 z-30 w-full sm:w-80 flex flex-col items-center justify-center border-r border-white/10 bg-black/60 p-6 backdrop-blur-xl animate-in slide-in-from-left duration-500 hover:bg-black/70 transition-colors">
-                <div className="w-full max-w-xs space-y-4 text-center">
+                <div className="w-full max-w-xs space-y-4 text-center relative">
+                    <button
+                        onClick={() => setIsCollapsed(true)}
+                        className="absolute -top-4 -right-4 text-zinc-500 hover:text-white p-2"
+                        title="Minimize"
+                    >
+                        <ChevronLeft className="h-6 w-6" />
+                    </button>
                     <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-amber-500/20 shadow-[0_0_30px_rgba(245,158,11,0.2)]">
                         <User className="h-8 w-8 text-amber-500" />
                     </div>
