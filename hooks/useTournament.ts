@@ -58,14 +58,25 @@ export function useTournament() {
     const actions = {
         saveSettings: (newSettings: TournamentSettings) => pushUpdate({ settings: newSettings }),
 
-        saveRegistrations: (newRegs: RegisteredPlayer[]) => pushUpdate({ registrations: newRegs }),
+        saveRegistration: (player: RegisteredPlayer) => {
+            const updated = [...registrations, player];
+            pushUpdate({ registrations: updated });
+        },
+
+        removeRegistration: (id: string) => {
+            const updated = registrations.filter(p => p.id !== id);
+            pushUpdate({ registrations: updated });
+        },
 
         saveBracket: (newBracket: Match[]) => pushUpdate({ bracket: newBracket }),
 
-        saveChampions: (newChamps: Champion[]) => pushUpdate({ champions: newChamps }),
+        saveChampion: (champion: Champion) => {
+            const updated = [champion, ...champions];
+            pushUpdate({ champions: updated });
+        },
 
         resetTournament: async () => {
-            // Keep waitlist but clear active
+            // Keep waitlisted players
             const waitlistedPlayers = registrations.filter(p => p.isWaitlist).map(p => ({
                 ...p,
                 isWaitlist: false,
@@ -75,8 +86,6 @@ export function useTournament() {
             await pushUpdate({
                 registrations: waitlistedPlayers,
                 bracket: []
-                // Champions and Settings are preserved by not including them in this overwrite? 
-                // Wait, merge:true means they stay. If we want to clear bracket, we pass empty array. Correct.
             });
         }
     };
