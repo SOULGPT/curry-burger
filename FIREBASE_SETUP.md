@@ -37,6 +37,12 @@ service cloud.firestore {
       // No one can edit or delete messages once sent (tamper-proof)
       allow update, delete: if false; 
     }
+
+    // Allow global access to tournament data (Settings, Players, Bracket)
+    // This makes the app real-time for everyone!
+    match /tournament/data {
+      allow read, write: if true;
+    }
     
     // Default deny for everything else (Best Practice)
     match /{document=**} {
