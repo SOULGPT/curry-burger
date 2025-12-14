@@ -113,19 +113,69 @@ export function StreamChat() {
         )
     }
 
-    // Minimized State (Bubble)
+    // Overlay State (Twitch-style)
+    const [overlayMessages, setOverlayMessages] = useState<{ id: string, user: string, text: string }[]>([]);
+
+    // Listen for new messages when collapsed
+    useEffect(() => {
+        if (!isCollapsed || messages.length === 0) {
+            setOverlayMessages([]); // Clear overlay when opened
+            return;
+        }
+
+        const lastMsg = messages[messages.length - 1];
+        // Prevent adding the same message multiple times if strict mode or re-renders
+        // We use a timestamp check or just simple ID check against last rendered 
+        // But here we'll just push the latest if it's new. 
+        // actually simplest is: when messages changes, take the last one.
+
+        // Simple distinct check
+        setOverlayMessages(prev => {
+            if (prev.length > 0 && prev[prev.length - 1].id === lastMsg.id) return prev;
+
+            // Keep max 5 messages on screen
+            const newQueue = [...prev, lastMsg].slice(-5);
+            return newQueue;
+        });
+
+        // Hide after 5 seconds
+        const timer = setTimeout(() => {
+            setOverlayMessages(prev => prev.filter(m => m.id !== lastMsg.id));
+        }, 5000);
+
+        return () => clearTimeout(timer);
+    }, [messages, isCollapsed]);
+
+
+    // Minimized State (Bubble + Overlay)
     if (isCollapsed) {
         return (
-            <button
-                onClick={() => setIsCollapsed(false)}
-                className="fixed left-4 bottom-28 md:bottom-8 z-[60] flex h-14 w-14 items-center justify-center rounded-full bg-amber-500 shadow-[0_0_25px_rgba(245,158,11,0.6)] ring-2 ring-white/20 transition hover:scale-110 hover:bg-amber-400 animate-in zoom-in duration-300"
-                title="Open Chat"
-            >
-                <div className="relative">
-                    <MessageSquare className="h-6 w-6 text-black" />
-                    <div className="absolute -top-1 -right-1 h-3 w-3 rounded-full bg-red-500 border-2 border-black animate-pulse" />
+            <>
+                {/* Floating Overlay Messages */}
+                <div className="fixed bottom-36 left-4 z-[50] w-64 flex flex-col items-start gap-2 pointer-events-none md:bottom-24">
+                    {overlayMessages.map((msg) => (
+                        <div key={msg.id} className="bg-black/80 backdrop-blur-md px-3 py-1.5 rounded-lg border border-white/10 animate-in slide-in-from-left-4 fade-in duration-300">
+                            <div className="flex items-center space-x-2">
+                                <span className="text-[10px] font-bold opacity-80" style={{ color: stringToColor(msg.user) }}>{msg.user}</span>
+                                <span className="text-xs text-white shadow-sm">{formatMessage(msg.text)}</span>
+                            </div>
+                        </div>
+                    ))}
                 </div>
-            </button>
+
+                <button
+                    onClick={() => setIsCollapsed(false)}
+                    className="fixed left-4 bottom-28 md:bottom-8 z-[60] flex h-14 w-14 items-center justify-center rounded-full bg-amber-500 shadow-[0_0_25px_rgba(245,158,11,0.6)] ring-2 ring-white/20 transition hover:scale-110 hover:bg-amber-400 animate-in zoom-in duration-300"
+                    title="Open Chat"
+                >
+                    <div className="relative">
+                        <MessageSquare className="h-6 w-6 text-black" />
+                        {overlayMessages.length > 0 && (
+                            <div className="absolute -top-1 -right-1 h-3 w-3 rounded-full bg-red-500 border-2 border-black animate-pulse" />
+                        )}
+                    </div>
+                </button>
+            </>
         );
     }
 
