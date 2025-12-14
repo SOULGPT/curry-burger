@@ -13,13 +13,22 @@ export interface ChatMessage {
 
 export function useChat() {
     const [messages, setMessages] = useState<ChatMessage[]>([]);
-    const [username, setUsername] = useState<string | null>(null);
+    const [username, setUsername] = useState<string | null>(() => {
+        if (typeof window !== 'undefined') {
+            return localStorage.getItem('chat_username');
+        }
+        return null;
+    });
     const { settings } = useTournament();
 
+    // No need for useEffect to load username anymore since we do it lazily
+    // But we listen for storage events in case other tabs update it
     useEffect(() => {
-        // Load username from local storage if exists
-        const storedName = localStorage.getItem('chat_username');
-        if (storedName) setUsername(storedName);
+        const handleStorage = () => {
+            setUsername(localStorage.getItem('chat_username'));
+        };
+        window.addEventListener('storage', handleStorage);
+        return () => window.removeEventListener('storage', handleStorage);
     }, []);
 
     useEffect(() => {
