@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { Send, Smile, User, ChevronLeft, MessageSquare } from "lucide-react";
 import { useChat } from "@/hooks/useChat";
 import { useTournament } from "@/hooks/useTournament";
+import Link from "next/link";
 
 const CUSTOM_EMOJIS = [
     { code: ":burger:", char: "🍔", label: "Burger" },
@@ -116,6 +117,34 @@ export function StreamChat() {
         );
     }
 
+    const { registrations } = useTournament();
+
+    // Auth State
+    const [authStep, setAuthStep] = useState<'email' | 'username'>('email');
+    const [emailInput, setEmailInput] = useState("");
+    const [authError, setAuthError] = useState("");
+
+    const handleEmailSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        setAuthError("");
+
+        const email = emailInput.trim().toLowerCase();
+        if (!email) return;
+
+        const isRegistered = registrations.some(p => p.email.toLowerCase() === email);
+
+        if (isRegistered) {
+            setAuthStep('username');
+        } else {
+            setAuthError("Email not found. You must register for the tournament or waitlist to chat.");
+        }
+    };
+
+    const handleUsernameSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        if (nameInput.trim()) setChatName(nameInput);
+    };
+
     if (!username) {
         return (
             <div className="fixed left-0 top-0 bottom-0 z-30 w-80 flex flex-col items-center justify-center border-r border-white/10 bg-black/60 p-6 backdrop-blur-xl animate-in slide-in-from-left duration-500 hover:bg-black/70 transition-colors">
@@ -124,27 +153,62 @@ export function StreamChat() {
                         <User className="h-8 w-8 text-amber-500" />
                     </div>
                     <h3 className="text-xl font-black uppercase italic text-white">Join the Chat</h3>
-                    <p className="text-xs text-zinc-400">Pick a username to start chatting!</p>
-                    <form onSubmit={(e) => {
-                        e.preventDefault();
-                        if (nameInput.trim()) setChatName(nameInput);
-                    }} className="space-y-2">
-                        <input
-                            type="text"
-                            value={nameInput}
-                            onChange={(e) => setNameInput(e.target.value)}
-                            placeholder="Username..."
-                            className="w-full rounded-xl border border-zinc-700 bg-black/50 px-4 py-2 font-bold text-white placeholder-zinc-500 focus:border-amber-500 focus:outline-none"
-                            maxLength={15}
-                        />
-                        <button
-                            type="submit"
-                            disabled={!nameInput.trim()}
-                            className="w-full rounded-xl bg-amber-500 py-2 font-bold text-black transition hover:bg-amber-400 disabled:opacity-50"
-                        >
-                            Join
-                        </button>
-                    </form>
+
+                    {authStep === 'email' ? (
+                        <>
+                            <p className="text-xs text-zinc-400">Enter your registration email to verify access.</p>
+                            <form onSubmit={handleEmailSubmit} className="space-y-2">
+                                <input
+                                    type="email"
+                                    value={emailInput}
+                                    onChange={(e) => setEmailInput(e.target.value)}
+                                    placeholder="Enter your email..."
+                                    className="w-full rounded-xl border border-zinc-700 bg-black/50 px-4 py-2 text-sm font-bold text-white placeholder-zinc-500 focus:border-amber-500 focus:outline-none"
+                                />
+                                {authError && <p className="text-[10px] font-bold text-red-500 leading-tight">{authError}</p>}
+                                <button
+                                    type="submit"
+                                    disabled={!emailInput.trim()}
+                                    className="w-full rounded-xl bg-amber-500 py-2 font-bold text-black transition hover:bg-amber-400 disabled:opacity-50"
+                                >
+                                    Verify Email
+                                </button>
+                                <div className="pt-2">
+                                    <Link href="/register" className="text-xs text-amber-500 hover:underline">
+                                        Not registered? Sign up here
+                                    </Link>
+                                </div>
+                            </form>
+                        </>
+                    ) : (
+                        <>
+                            <p className="text-xs text-zinc-400">Verified! Choose a display name for the chat.</p>
+                            <form onSubmit={handleUsernameSubmit} className="space-y-2">
+                                <input
+                                    type="text"
+                                    value={nameInput}
+                                    onChange={(e) => setNameInput(e.target.value)}
+                                    placeholder="Username..."
+                                    className="w-full rounded-xl border border-zinc-700 bg-black/50 px-4 py-2 font-bold text-white placeholder-zinc-500 focus:border-amber-500 focus:outline-none"
+                                    maxLength={15}
+                                />
+                                <button
+                                    type="submit"
+                                    disabled={!nameInput.trim()}
+                                    className="w-full rounded-xl bg-amber-500 py-2 font-bold text-black transition hover:bg-amber-400 disabled:opacity-50"
+                                >
+                                    Join Chat
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => { setAuthStep('email'); setAuthError(""); }}
+                                    className="text-xs text-zinc-500 hover:text-white"
+                                >
+                                    Back
+                                </button>
+                            </form>
+                        </>
+                    )}
                 </div>
             </div>
         );
